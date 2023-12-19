@@ -1,0 +1,75 @@
+* {
+    box-sizing: border-box;
+  }
+  
+  body {
+    height: 100vh;
+    margin: 0;
+  }
+  
+  .grid-container {
+    width: 400px;
+    height: 300px;
+    border: 1px solid #ccc;
+  }
+
+  .cell {
+    border: 1px solid #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .grid-wrapper {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .grid {
+    align-items: center;
+    box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-wrap: wrap;
+    height: 100%;
+    justify-content: center;
+    height: 600px;
+    width: 600px;
+  }
+  
+  .grid div {
+    border: 1px solid lightgrey;
+    flex-grow: 1;
+    height: 10%;
+    width: 10%;
+  }
+
+  .grid div.frog {
+    background-image: url('../assets/Frog.png');
+    background-repeat: no-repeat;
+    background-size: contain;
+    cursor: pointer;
+  }
+
+  .grid div.car {
+    background-image: url('../assets/car.png');
+    background-repeat: no-repeat;
+    background-size: contain;
+  }
+  
+  .row-0 {
+    background-color: forestgreen;
+  }
+
+  .row-1, .row-2, .row-3 {
+    background-color: lightskyblue;
+  }
+
+  .row-4, .row-5, .row-6  {
+    background-color: darkgray ;
+  }
+
+  .row-7 {
+    background: forestgreen;
+  }
