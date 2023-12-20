@@ -10,16 +10,15 @@ function init () {
     const cellCount = width * height
     let cells = []
 
+
     //character config
     const startingPosition = 60
     let currentPosition = startingPosition
-    const carPositions = [39, 47, 55]
-    const carsToGenerate = 5
-    let isCarMoving = false
-    let carsGenerated = 0
-    let direction = ""
-    let position = currentPosition
-    let intervalIds = []
+    const carSpeed = 1000
+    const startingPositions = [32, 40, 48]
+
+
+
 
     //! functions
     function createGrid() {
@@ -38,41 +37,6 @@ function init () {
         addFrog(startingPosition)
     }
 
-    function shuffleArray(array) {
-        if (array.length <= 1){
-            return array
-        }
-        let swapIndex
-
-        for (let i = array.length - 1; i > 0; i--) {
-            swapIndex = Math.floor(Math.random() * (i + 1))
-            [array[i], array[swapIndex]] = [array[swapIndex], array[i]]
-        }
-        return array
-    }
-
-    function startCarMovements(){
-        const availablePositions = cells.map((_, index) => index)
-        .filter((index) => !carPositions.includes(index))
-        
-        const shuffledPositions = shuffleArray(availablePositions)
-
-        shuffledPositions.slice(0, carsToGenerate).forEach((position) => {
-            const intervalId = setInterval(() => {
-                moveCar(position)
-            }, getRandomTimeInterval())
-            
-            intervalIds.push(intervalId)
-        })
-        
-        setTimeout(() => {
-            intervalIds.forEach((id) => clearInterval(id))
-        }, 5000) 
-    }
-    
-    function getRandomTimeInterval() {
-        return Math.floor(Math.random() * (3000 - 1000 + 1)) + 1000
-    }
 
     function addFrog(position){
         cells[position].classList.add('frog')
@@ -83,29 +47,47 @@ function init () {
     }
 
     function addCar(position) {
-        cells[position].classList.add('car')
-    }
-
-    function removeCar(position) {
-        cells[position].classList.remove('car')
-    }
-
-    function moveCar(position) {
-        removeCar(position)
-
-        if (position % width === 0) {
-            removeCar(position)
-            position = width * (Math.floor(position / width) + 1) - 1
-            addCar(position)
-        } else {
-            if (position >= 0 && position < cellCount){
-            removeCar(position)
-           position--
-            addCar(position)
+        if (position >= 0 && position < cellCount) {
+            if (cells[position]) {
+                cells[position].classList.add('carright')
+            } 
             }
         }
+
+    
+        function removeCar(position) {
+            if (cells[position] && cells[position].classList.contains('carright')){
+                cells[position].classList.remove('carright')
+            } else {
+                console.error(`No car found at position ${position}.`)
+            }
+            
+        }
+
+    function createCars() {
+        startingPositions.forEach(position => {
+            addCar(position)
+        })
     }
-  
+
+    function moveCars() {
+        startingPositions.forEach((position, index) => {
+            removeCar(position)
+            const nextPosition = position + 1
+            if (nextPosition % width !== 0) {
+             startingPositions[index] = nextPosition
+              } else {
+               startingPositions[index] = Math.floor(nextPositions / width) * width
+            }
+            addCar(startingPositions[index])
+        })
+    }
+
+    function startCarMovements() {
+        setInterval(moveCars, carSpeed)
+    }
+
+
 
     function handleMovement(event){
         const key = event.key
@@ -116,10 +98,10 @@ function init () {
 
         removeFrog()
 
-        if (!isCarMoving) {
-            isCarMoving = true
-            startCarMovements()
-        }
+        // if (!isCarMoving) {
+        //     isCarMoving = true
+        //     startCarMovements()
+        // }
 
         if (key === up && currentPosition >= width) {
             direction = "up"
@@ -142,6 +124,8 @@ function init () {
 //! Events
 document.addEventListener('keyup', handleMovement)
     createGrid()
+    createCars()
+    startCarMovements()
 }
 
 window.addEventListener('DOMContentLoaded', init)

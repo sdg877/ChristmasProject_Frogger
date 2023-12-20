@@ -52,8 +52,14 @@
     cursor: pointer;
   }
 
-  .grid div.car {
-    background-image: url('../assets/car.png');
+  .grid div.carright {
+    background-image: url('../assets/carright.png');
+    background-repeat: no-repeat;
+    background-size: contain;
+  }
+
+  .grid div.carleft {
+    background-image: url('../assets/carleft.png');
     background-repeat: no-repeat;
     background-size: contain;
   }
