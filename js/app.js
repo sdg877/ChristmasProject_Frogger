@@ -18,8 +18,6 @@ function init () {
     const startingPositions = [32, 40, 48]
 
 
-
-
     //! functions
     function createGrid() {
         for (let i = 0; i < cellCount; i++){
@@ -37,7 +35,6 @@ function init () {
         addFrog(startingPosition)
     }
 
-
     function addFrog(position){
         cells[position].classList.add('frog')
     }
@@ -54,21 +51,40 @@ function init () {
             }
         }
 
-    
         function removeCar(position) {
             if (cells[position] && cells[position].classList.contains('carright')){
                 cells[position].classList.remove('carright')
-            } else {
-                console.error(`No car found at position ${position}.`)
             }
-            
         }
 
     function createCars() {
-        startingPositions.forEach(position => {
-            addCar(position)
-        })
-    }
+        startingPositions.forEach((position, index) => {
+            setTimeout(() => {
+             const carMoveInterval = setInterval(() => {
+                const emptySpaces = cells.filter(
+                    (cell, idx) =>
+                    !cell.classList.contains('carright') &&
+                    Math.abs(position - idx) > 2 &&
+                    Math.floor(position / width) === Math.floor(idx / width)
+                )
+
+                if (emptySpaces.length > 0) {
+                    const randomEmptySpace =
+                    emptySpaces[Math.floor(Math.random() * emptySpaces.length)]
+
+                    removeCar(position)
+                    addCar(randomEmptySpace.dataset.index)
+                    position = parseInt(randomEmptySpace.dataset.index, 10)
+                }
+            }, carSpeed)
+
+            setTimeout(() => {
+                clearInterval(carMoveInterval)
+            }, carSpeed * 30)
+        }, index * 3000)
+    })
+}
+
 
     function moveCars() {
         startingPositions.forEach((position, index) => {
@@ -77,7 +93,7 @@ function init () {
             if (nextPosition % width !== 0) {
              startingPositions[index] = nextPosition
               } else {
-               startingPositions[index] = Math.floor(nextPositions / width) * width
+               startingPositions[index] = Math.floor(nextPosition / width) * width
             }
             addCar(startingPositions[index])
         })
