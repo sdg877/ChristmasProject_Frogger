@@ -14,10 +14,10 @@ function init () {
     //character config
     const startingPosition = 95
     let currentPosition = startingPosition
-    const carSpeed = 1000
+    const carSpeed = 400
     const validRows = [5, 6, 7, 8]
     const fixedStartingPositions = [50, 60, 70, 80]
-    const lilyStartPositions = [10, 20, 30, 40]
+    // const lilyStartPositions = [19, 29, 39, 49]
     let direction = "right"
 
 
@@ -88,125 +88,93 @@ function init () {
         setInterval(moveCars, carSpeed)
         }
 
-    function createCars() {
-         const carGenerationInterval = setInterval(() => {
-            const emptySpaces = cells.filter(
-                (cell, idx) =>
-                !cell.classList.contains('carright') &&
-                isValidRow(idx) &&
-                hasSpaceAround(idx)
+        function createCars() {
+            const carGenerationInterval = setInterval(() => {
+                const emptyStartingPositions = fixedStartingPositions.filter(
+                    (position) => !cells[position].classList.contains('carright')
                 );
-            if (emptySpaces.length > 0) {
-                const randomEmptySpace =
-                        emptySpaces[Math.floor(Math.random() * emptySpaces.length)]
-                addCar(Number(randomEmptySpace.dataset.index))
-            } else {
-                 clearInterval(carGenerationInterval)
-            }
-         }, carSpeed * 3) 
-        
-        setTimeout(() => {
-            clearInterval(carGenerationInterval)
-        }, carSpeed * 30)
-    }
     
-    
-function moveCars() {
-     const carIndices = cells.reduce((acc, cell, index) => {
-            if (cell.classList.contains('carright') && isValidRow(index)) {
-                cells[index].classList.remove('carright')
-                acc.push(index)
-            }
-            return acc
-        }, [])
-
-        carIndices.forEach((currentPosition) => {
-            cells[currentPosition].classList.remove('carright')
-
-            let nextPosition = currentPosition + 1
-
-            if (nextPosition % width !== 0 && !cells[nextPosition].classList.contains('carright')) {
-                cells[nextPosition].classList.add('carright')
-            } else {
-                const currentRow = Math.floor(currentPosition / width)
-
-                const validRowIndex = validRows.indexOf(currentRow)
-
-                if (validRowIndex !== -1) {
-                    const nextValidRowIndex = (validRowIndex + 1) % validRows.length
-                    const nextRow = validRows[nextValidRowIndex]
-                    nextPosition = nextRow * width
-                    cells[nextPosition].classList.add('carright')
+                if (emptyStartingPositions.length > 0) {
+                    const randomStartingPosition =
+                        emptyStartingPositions[Math.floor(Math.random() * emptyStartingPositions.length)];
+                    addCar(randomStartingPosition);
+                } else {
+                    clearInterval(carGenerationInterval);
                 }
-            }
-        })
-
-    setTimeout(() => {
-        clearInterval(carMoveInterval)
-        cells.forEach((cell) => {
-            if (cell.classList.contains('carright')) {
-                cell.classList.remove('carright')
-            }
-        })
-    }, carSpeed * 30)
-}
-
-
-//         fixedStartingPositions.forEach((position) => {
-//                 removeCar(position)
-
-//              const nextPosition = position + 1
-
-//              if (nextPosition % width !== 0) {
-//                 addCar(nextPosition)
-//              } else {
-//                 removeCar(position)
-//              }
-//         })
-//     }, carSpeed)
-
-//     setTimeout(() => {
-//         clearInterval(carMoveInterval)
-//     }, carSpeed * 30)
-// }
-
-function addLilyPads() {
-    lilyStartPositions.forEach((startPosition, index) => {
-        let position = startPosition
-
-        const lilyInterval = setInterval(() => {
-        const addLily = () => {
-            if (position >= 0 && position < cellCount) {
-                cells[position].classList.add('lilypad')
-            }
+            }, carSpeed * 3);
+    
+            setTimeout(() => {
+                clearInterval(carGenerationInterval);
+            }, carSpeed * 30);
         }
-        const removeLily = () => {
-            if (position >= 0 && position < cellCount) {
-                cells[position].classList.remove('lilypad')
-            }
+    
+        function moveCars() {
+            const carIndices = cells.reduce((acc, cell, index) => {
+                if (cell.classList.contains('carright') && isValidRow(index)) {
+                    cells[index].classList.remove('carright');
+                    acc.push(index);
+                }
+                return acc;
+            }, []);
+    
+            carIndices.forEach((currentPosition) => {
+                cells[currentPosition].classList.remove('carright');
+                let nextPosition = currentPosition + 1;
+    
+                if (nextPosition % width !== 0 && !cells[nextPosition].classList.contains('carright')) {
+                    cells[nextPosition].classList.add('carright');
+                } else {
+                    const currentRow = Math.floor(currentPosition / width);
+                    const nextValidRowIndex = (validRows.indexOf(currentRow) + 1) % fixedStartingPositions.length;
+                    const nextStartingPosition = fixedStartingPositions[nextValidRowIndex];
+    
+                    cells[currentPosition].classList.remove('carright');
+                    cells[nextStartingPosition].classList.add('carright');
+                }
+            });
         }
 
-        addLily()
 
-        const moveLily = () => {
-            removeLily()
-            position--
-
-            if (position < 0 || position % width === width - 1) {
-                clearInterval(lilyInterval)
-            } else {
-                addLily()
-            }
+        function addLilyPads() {
+            const oppositePositions = [19, 29, 39, 49]; // Opposite positions for lily pads
+        
+            oppositePositions.forEach((startPosition, index) => {
+                let position = startPosition;
+        
+                const lilyInterval = setInterval(() => {
+                    const addLily = () => {
+                        if (position >= 0 && position < cellCount) {
+                            cells[position].classList.add('lilypad');
+                        }
+                    };
+        
+                    const removeLily = () => {
+                        if (position >= 0 && position < cellCount) {
+                            cells[position].classList.remove('lilypad');
+                        }
+                    };
+        
+                    addLily();
+        
+                    const moveLily = () => {
+                        removeLily();
+                        position++;
+        
+                        if (position % width === 0 || position >= cellCount) {
+                            clearInterval(lilyInterval);
+                        } else {
+                            addLily();
+                        }
+                    };
+                    moveLily();
+        
+                }, carSpeed * 5 * (index + 1));
+        
+                setTimeout(() => {
+                    clearInterval(lilyInterval);
+                }, carSpeed * 5 * (index + 1) + carSpeed * 2);
+            });
         }
-        moveLily()
-
-        }, carSpeed * 5 * (index + 1))
-
-        setTimeout(() => {
-            clearInterval(lilyInterval)
-        }, carSpeed * 5 * (index + 1) + carSpeed * 2)
-    })
-}
 
 
     function handleMovement(event){
