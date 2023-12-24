@@ -63,19 +63,25 @@
     background-repeat: no-repeat;
     background-size: contain;
   }
+
+  .grid div.lilypad {
+    background-image: url('../assets/lilypad.png');
+    background-repeat: no-repeat;
+    background-size: contain;
+  }
   
   .row-0 {
     background-color: forestgreen;
   }
 
-  .row-1, .row-2, .row-3 {
+  .row-1, .row-2, .row-3, .row-4 {
     background-color: lightskyblue;
   }
 
-  .row-4, .row-5, .row-6  {
+  .row-5, .row-6, .row-7, .row-8  {
     background-color: darkgray ;
   }
 
-  .row-7 {
+  .row-9 {
     background: forestgreen;
   }
