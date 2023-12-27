@@ -14,7 +14,7 @@ function init () {
     //character config
     const startingPosition = 95
     let currentPosition = startingPosition
-    const carSpeed = 400
+    const moveSpeed = 500
     const validRows = [5, 6, 7, 8]
     const lilyRows = [1, 2, 3, 4]
     const fixedStartingPositions = [50, 60, 70, 80]
@@ -40,6 +40,9 @@ function init () {
         addFrog(startingPosition)
         createCars()
         moveCars()
+        addLilyPads(...lilyPads)
+        startCarMovements()
+        moveLilyPads()
     }
 
     function addFrog(position){
@@ -87,93 +90,124 @@ function init () {
 
 
     function startCarMovements() {
-        setInterval(moveCars, carSpeed)
+        setInterval(moveCars, moveSpeed)
+        setInterval(moveLilyPads, moveSpeed)
         }
 
-        function createCars() {
-            const carGenerationInterval = setInterval(() => {
-                const emptyStartingPositions = fixedStartingPositions.filter(
-                    (position) => !cells[position].classList.contains('carright')
-                );
-    
-                if (emptyStartingPositions.length > 0) {
-                    const randomStartingPosition =
-                        emptyStartingPositions[Math.floor(Math.random() * emptyStartingPositions.length)];
-                    addCar(randomStartingPosition);
-                } else {
-                    clearInterval(carGenerationInterval);
-                }
-            }, carSpeed * 3);
-    
-            setTimeout(() => {
-                clearInterval(carGenerationInterval);
-            }, carSpeed * 30);
+    function createCars() {
+        const carGenerationInterval = setInterval(() => {
+            const emptyStartingPositions = fixedStartingPositions.filter(
+                (position) => !cells[position].classList.contains('carright')
+            )
+        
+            if (emptyStartingPositions.length > 0) {
+                const randomStartingPosition =
+                    emptyStartingPositions[Math.floor(Math.random() * emptyStartingPositions.length)]
+                addCar(randomStartingPosition)
+                // console.log('Car generated from position:', randomStartingPosition)
+            } else {
+                clearInterval(carGenerationInterval)
+            }
+        }, moveSpeed * 3)
+        
+        // setTimeout(() => {
+        //     clearInterval(carGenerationInterval)
+        //     }, carSpeed * 30)
         }
     
     function moveCars() {
         const carIndices = cells.reduce((acc, cell, index) => {
             if (cell.classList.contains('carright') && isValidRow(index)) {
-                cells[index].classList.remove('carright');
-                acc.push(index);
+                cells[index].classList.remove('carright')
+                acc.push(index)
             }
-            return acc;
-        }, []);
-    
+        return acc
+        }, [])
+        
         carIndices.forEach((currentPosition) => {
-            cells[currentPosition].classList.remove('carright')
-            let nextPosition = currentPosition + 1
-    
+            cells[currentPosition].classList.remove('carright');
+            let nextPosition = currentPosition + 1;
+        
             if (nextPosition % width !== 0 && !cells[nextPosition].classList.contains('carright')) {
                 cells[nextPosition].classList.add('carright')
             } else {
                 const currentRow = Math.floor(currentPosition / width)
-                const nextValidRowIndex = (validRows.indexOf(currentRow) + 1) % fixedStartingPositions.length
-                const nextStartingPosition = fixedStartingPositions[nextValidRowIndex];
-    
-                cells[currentPosition].classList.remove('carright')
-                cells[nextStartingPosition].classList.add('carright')
+                const nextRowFixedPositions = fixedStartingPositions.filter(
+                    (pos) => Math.floor(pos / width) === currentRow + 1
+                )
+        
+                if (nextRowFixedPositions.length > 0) {
+                    const nextStartingPosition = nextRowFixedPositions[0]
+                    cells[currentPosition].classList.remove('carright')
+                    cells[nextStartingPosition].classList.add('carright')
+                }
             }
             checkCollision()
         })
     }
 
-    function addLilyPads() {
-        const moveLily = (lilyIndex) => {
-            const lilyInterval = setInterval(() => {
-                const position = lilyPads[lilyIndex]
-                 cells[position].classList.add('lilypad')
-        
-                const move = () => {
-                    cells[position].classList.remove('lilypad');
-                        if ((position + 1) % width !== 0) {
-                            lilyPads[lilyIndex]++;
-                        } else {
-                            lilyPads[lilyIndex] = lilyRows[lilyIndex] * width;
-                        }
-                        cells[lilyPads[lilyIndex]].classList.add('lilypad');
-                    };
-                    move();
-                }, carSpeed * 5 * (lilyIndex + 1));
-        
-                setTimeout(() => {
-                    clearInterval(lilyInterval);
-                }, carSpeed * 5 * (lilyIndex + 1) + carSpeed * 2);
-        
-                lilyPads.forEach((startingPosition, index) => {
-                    moveLily(index);
-                });
-            };
+
+    function addLilyPads(position) {
+        if (position >= 0 && position < cellCount) {
+            if (cells[position]) {
+                cells[position].classList.add('lilypad')
+            } 
+        }
+    }
+
+    function removeLilyPads(position) {
+            if (cells[position] && cells[position].classList.contains('lilypad')){
+                cells[position].classList.remove('lilypad')
+            }
         }
 
+        function moveLilyPads() {
+            const lilyPadsInterval = setInterval(() => {
+                lilyPads.forEach((position, index) => {
+                    if (cells[position]) {
+                        cells[position].classList.remove('lilypad');
+                        const nextPosition = position - 1;
+        
+                        if (nextPosition % width !== width - 1) {
+                            cells[nextPosition].classList.add('lilypad');
+                            lilyPads[index] = nextPosition;
+                        } else {
+                            cells[position].classList.remove('lilypad');
+                            lilyPads.splice(index, 1);
+                        }
+                    }
+                });
+        
+                const emptyStartingPositions = lilyRows.filter(row => !lilyPads.some(pad => Math.floor(pad / width) === row));
+                if (emptyStartingPositions.length > 0) {
+                    const randomRow = emptyStartingPositions[Math.floor(Math.random() * emptyStartingPositions.length)];
+                    const randomStartingPosition = width * randomRow + width - 1;
+                    cells[randomStartingPosition].classList.add('lilypad');
+                    lilyPads.push(randomStartingPosition);
+                }
+            }, moveSpeed);
+        
+            setTimeout(() => {
+                clearInterval(lilyPadsInterval);
+            }, moveSpeed * 30);
+        }
     function stopGame() {
         alert("GAME OVER - YOU LOSE!!")
         document.removeEventListener('keyup', handleMovement)
         console.log('Collision detected! Game Over!')
     }
 
+    // function checkCollision() {
+    //     if (cells[currentPosition].classList.contains('carright')){
+    //         stopGame()
+    //     }
+    // }
+
     function checkCollision() {
-        if (cells[currentPosition].classList.contains('carright')){
-            stopGame()
+        if (currentPosition >= 0 && currentPosition < cells.length && cells[currentPosition]) {
+            if (cells[currentPosition].classList.contains('carright')) {
+                stopGame();
+            }
         }
     }
 
@@ -207,7 +241,6 @@ function init () {
 //! Events
 document.addEventListener('keyup', handleMovement)
     createGrid()
-    addLilyPads()
     createCars()
     startCarMovements()
 }
