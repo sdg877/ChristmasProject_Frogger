@@ -39,7 +39,6 @@
   }
   
   .grid div {
-    /* border: 1px solid lightgrey; */
     flex-grow: 1;
     height: 10%;
     width: 10%;
@@ -79,7 +78,7 @@
   }
 
   .row-5, .row-6, .row-7, .row-8  {
-    background-color: darkgray ;
+    background-color: dimgray ;
   }
 
   .row-9 {

@@ -14,15 +14,16 @@ function init () {
     //character config
     const startingPosition = 95
     let currentPosition = startingPosition
-    const moveSpeed = 250
-    const validRows = [5, 6, 7, 8]
+    const moveSpeed = 500
     const lilyRows = [1, 2, 3, 4]
+    const validRows = [5, 6, 7, 8]
+    const lilyStartPositions = [10, 20, 30, 40]
     const fixedStartingPositions = [50, 60, 70, 80]
-    const lilyStartPositions = [19, 29, 39, 49]
     let direction = "right"
-    // let lilyPads = [19, 29, 39, 49];
+    let collided = false
     let lilyGenerationInterval
     let lilyMovementInterval
+    let carGenerationInterval
 
 
     //! functions
@@ -43,8 +44,9 @@ function init () {
         createCars()
         moveCars()
         createLilyPads()
-        startCarMovements()
         moveLilyPads()
+        startMovements()
+
     }
 
     function addFrog(position){
@@ -100,121 +102,90 @@ function init () {
                 const randomStartingPosition =
                     emptyStartingPositions[Math.floor(Math.random() * emptyStartingPositions.length)]
                 addCar(randomStartingPosition)
-                // console.log('Car generated from position:', randomStartingPosition)
             } else {
                 clearInterval(carGenerationInterval)
             }
         }, moveSpeed * 1.5)
-        
-        // setTimeout(() => {
-        //     clearInterval(carGenerationInterval)
-        //     }, carSpeed * 30)
         }
 
-        function moveCars() {
-            const carIndices = cells.reduce((acc, cell, index) => {
-                if (cell.classList.contains('carright') && isValidRow(index)) {
-                    acc.push(index);
-                }
-                return acc;
-            }, []);
+    function moveCars() {
+        const carIndices = cells.reduce((acc, cell, index) => {
+            if (cell.classList.contains('carright') && isValidRow(index)) {
+                acc.push(index)
+            }
+            return acc
+        }, [])
         
-            carIndices.forEach((currentPosition) => {
-                cells[currentPosition].classList.remove('carright');
-                const nextPosition = currentPosition + 1;
+        carIndices.forEach((currentPosition) => {
+            cells[currentPosition].classList.remove('carright')
+            const nextPosition = currentPosition + 1
         
-                if (nextPosition % width !== 0) {
-                    cells[nextPosition].classList.add('carright');
-                } else {
-                    cells[currentPosition].classList.remove('carright');
-                }
+            if (nextPosition % width !== 0) {
+                cells[nextPosition].classList.add('carright')
+            } else {
+                cells[currentPosition].classList.remove('carright')
+            }
         
-                // Check for collision with frog
-                checkCollision();
-            });
-        }
+            checkCollision()
+        })
+    }
+
+    function createLilyPads() {
+        const lilyGenerationInterval = setInterval(() => {
+            const emptyLilyStartingPositions = lilyStartPositions.filter(
+                (position) => !cells[position].classList.contains('lilypad')
+            )
+
+            if (emptyLilyStartingPositions.length > 0) {
+                const randomLilyStartPositions =
+                emptyLilyStartingPositions[Math.floor(Math.random() * emptyLilyStartingPositions.length)]
+                addLilyPads(randomLilyStartPositions)
+            } else {
+                clearInterval(lilyGenerationInterval)
+            }
+        }, moveSpeed)
+    }
+
+    function moveLilyPads() {
+        const lilyIndices = lilyStartPositions.filter((position) => cells[position].classList.contains('lilypad'));
+        
+        lilyIndices.forEach((position, index) => {
+            cells[position].classList.remove('lilypad');
+            lilyStartPositions[index] = position + 1;
+        });
     
-    // function moveCars() {
-    //     const carIndices = cells.reduce((acc, cell, index) => {
-    //         if (cell.classList.contains('carright') && isValidRow(index)) {
-    //             cells[index].classList.remove('carright')
+        lilyStartPositions.forEach((position) => {
+            if (position < cellCount && isValidRow(position)) {
+                cells[position].classList.add('lilypad');
+            }
+        });
+    }
+    // function moveLilyPads() {
+    //     const lilyIndices = cells.reduce((acc, cell, index) => {
+    //         if (cell.classList.contains('lilypad') && isValidRow(index)) {
     //             acc.push(index)
     //         }
-    //     return acc
+    //         return acc
     //     }, [])
-        
-    //     carIndices.forEach((currentPosition) => {
-    //         cells[currentPosition].classList.remove('carright');
-    //         let nextPosition = currentPosition + 1;
-        
-    //         if (nextPosition % width !== 0 && !cells[nextPosition].classList.contains('carright')) {
-    //             cells[nextPosition].classList.add('carright')
+
+    //     lilyIndices.forEach((currentPosition) => {
+    //         cells[currentPosition].classList.remove('lilypad')
+    //         const nextPosition = currentPosition + 1
+
+    //         if (nextPosition % width !== 0) {
+    //             cells[nextPosition].classList.add('lilypad')
     //         } else {
-    //             const currentRow = Math.floor(currentPosition / width)
-    //             const nextRowFixedPositions = fixedStartingPositions.filter(
-    //                 (pos) => Math.floor(pos / width) === currentRow + 1
-    //             )
-        
-    //             if (nextRowFixedPositions.length > 0) {
-    //                 const nextStartingPosition = nextRowFixedPositions[0]
-    //                 cells[currentPosition].classList.remove('carright')
-    //                 cells[nextStartingPosition].classList.add('carright')
-    //             }
+    //             cells[currentPosition].classList.remove('lilypad')
     //         }
-    //         checkCollision()
     //     })
     // }
 
 
 
-    function createLilyPads() {
-        lilyGenerationInterval = setInterval(() => {
-            const emptyStartingPositions = lilyStartPositions.filter(
-                (position) => !cells[position].classList.contains('lilypad')
-            )
-    
-            if (emptyStartingPositions.length > 0) {
-                const randomStartingPosition =
-                    emptyStartingPositions[Math.floor(Math.random() * emptyStartingPositions.length)]
-                addLilyPads(randomStartingPosition)
-            }
-        }, moveSpeed * 10)
-    
-        return lilyGenerationInterval;
-    }
-    
-    function moveLilyPads() {
-        const lilyPads = lilyStartPositions.slice(); // Create a copy of the initial lily pad positions
-        const lilyMovementInterval = setInterval(() => {
-            cells.forEach(cell => {
-                if (cell.classList.contains('lilypad')) {
-                    cell.classList.remove('lilypad');
-                }
-            });
-    
-            lilyPads.forEach((position, index) => {
-                const nextPosition = position - 1;
-    
-                if (nextPosition % width !== width - 1 && !cells[nextPosition].classList.contains('lilypad')) {
-                    cells[nextPosition].classList.add('lilypad');
-                    lilyPads[index] = nextPosition;
-                } else {
-                    cells[position].classList.remove('lilypad');
-                    const newRow = Math.floor(Math.random() * lilyRows.length);
-                    const newStartingPosition = width * lilyRows[newRow] + width - 1;
-                    cells[newStartingPosition].classList.add('lilypad');
-                    lilyPads[index] = newStartingPosition;
-                }
-            });
-        }, moveSpeed);
-    
-        return lilyMovementInterval;
-    }
-
-    function startCarMovements() {
+    function startMovements() {
         setInterval(moveCars, moveSpeed)
-        const lilyGenerationInterval = createLilyPads()
-        const lilyMovementInterval = moveLilyPads()
+        lilyGenerationInterval = setInterval(createLilyPads, moveSpeed * 3)
+        lilyMovementInterval = setInterval(moveLilyPads, moveSpeed)
         }
 
     function addLilyPads(position) {
@@ -232,103 +203,40 @@ function init () {
             }
         }
 
-    // function moveLilyPads() {
-    //     const lilyPadsInterval = setInterval(() => {
-    //         const newLilyPads = []
-    
-    //         lilyPads.forEach((position, index) => {
-    //             const nextPosition = position - 1
-    
-    //             if (nextPosition % width !== width - 1) {
-    //                 newLilyPads.push(nextPosition)
-    //             } else {
-    //                 newLilyPads.push(width * Math.floor(position / width) + width - 1)
-    //             }
-    //         })
-    
-    //         lilyPads = newLilyPads
-    
-    //         cells.forEach(cell => {
-    //             if (cell.classList.contains('lilypad')) {
-    //                  cell.classList.remove('lilypad')
-    //             }
-    //         })
-    
-    //         lilyPads.forEach(position => {
-    //             cells[position].classList.add('lilypad')
-    //         })
-    
-    //         const emptyStartingPositions = lilyRows.filter(row => !lilyPads.some(pad => Math.floor(pad / width) === row))
-    
-    //         if (emptyStartingPositions.length > 0) {
-    //             const randomPosition = emptyStartingPositions[Math.floor(Math.random() * emptyStartingPositions.length)]
-    //             const randomStartingPosition = width * randomPosition + width - 1
-    //             cells[randomStartingPosition].classList.add('lilypad')
-    //             lilyPads.push(randomStartingPosition)
-    //         }
-    //     }, moveSpeed)
-    
-    //     setTimeout(() => {
-    //         clearInterval(lilyPadsInterval)
-    //     }, moveSpeed * 30)
-    // }
-
-    // function startLilyPads() {
-    //     addLilyPads(lilyPads)
-    //     moveLilyPads()
-    // }
-
-        // function moveLilyPads() {
-        //     const lilyPadsInterval = setInterval(() => {
-        //         lilyPads.forEach((position, index) => {
-        //             if (cells[position]) {
-        //                 cells[position].classList.remove('lilypad');
-        //                 const nextPosition = position - 1;
-        
-        //                 if (nextPosition % width !== width - 1) {
-        //                     cells[nextPosition].classList.add('lilypad');
-        //                     lilyPads[index] = nextPosition;
-        //                 } else {
-        //                     cells[position].classList.remove('lilypad');
-        //                     lilyPads.splice(index, 1);
-        //                 }
-        //             }
-        //         });
-        
-        //         const emptyStartingPositions = lilyRows.filter(row => !lilyPads.some(pad => Math.floor(pad / width) === row));
-        //         if (emptyStartingPositions.length > 0) {
-        //             const randomRow = emptyStartingPositions[Math.floor(Math.random() * emptyStartingPositions.length)];
-        //             const randomStartingPosition = width * randomRow + width - 1;
-        //             cells[randomStartingPosition].classList.add('lilypad');
-        //             lilyPads.push(randomStartingPosition);
-        //         }
-        //     }, moveSpeed);
-        
-        //     setTimeout(() => {
-        //         clearInterval(lilyPadsInterval);
-        //     }, moveSpeed * 30);
-        // }
-
-
-    function stopGame() {
-        clearInterval(lilyGenerationInterval)
-        clearInterval(lilyMovementInterval)
-        alert("GAME OVER - YOU LOSE!!")
-        document.removeEventListener('keyup', handleMovement)
-        console.log('Collision detected! Game Over!')
-    }
-
-    // function checkCollision() {
-    //     if (cells[currentPosition].classList.contains('carright')){
-    //         stopGame()
-    //     }
-    // }
-
     function checkCollision() {
         if (currentPosition >= 0 && currentPosition < cells.length && cells[currentPosition]) {
             if (cells[currentPosition].classList.contains('carright')) {
-                stopGame();
+                stopGame()
             }
+        }
+    }
+
+    function resetGame() {
+        clearInterval(lilyGenerationInterval)
+        clearInterval(lilyMovementInterval)
+        clearInterval(carGenerationInterval)
+        cells.forEach(cell => {
+            cell.classList.remove('frog', 'carright', 'lilypad')
+        })
+        currentPosition = startingPosition
+        addFrog(startingPosition)
+        collided = false
+        document.addEventListener('keyup', handleMovement)
+        createCars()
+        startMovements()
+        createLilyPads()
+        moveLilyPads()
+    }
+
+    function stopGame() {
+        if (!collided) {
+            collided = true
+            clearInterval(lilyGenerationInterval)
+            clearInterval(lilyMovementInterval)
+            clearInterval(carGenerationInterval)
+            alert("GAME OVER - YOU LOSE!!")
+            document.removeEventListener('keyup', handleMovement)
+            resetGame()
         }
     }
 
@@ -362,10 +270,10 @@ function init () {
 //! Events
 document.addEventListener('keyup', handleMovement)
     createGrid()
-    createCars()
-    startCarMovements()
-    createLilyPads()
-    moveLilyPads()
+    // createCars()
+    // startMovements()
+    // createLilyPads()
+    // moveLilyPads()
 }
 
 window.addEventListener('DOMContentLoaded', init)
