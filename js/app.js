@@ -131,7 +131,7 @@ function init () {
     }
 
     function createLilyPads() {
-        const lilyGenerationInterval = setInterval(() => {
+        // const lilyGenerationInterval = setInterval(() => {
             const emptyLilyStartingPositions = lilyStartPositions.filter(
                 (position) => !cells[position].classList.contains('lilypad')
             )
@@ -140,10 +140,11 @@ function init () {
                 const randomLilyStartPositions =
                 emptyLilyStartingPositions[Math.floor(Math.random() * emptyLilyStartingPositions.length)]
                 addLilyPads(randomLilyStartPositions)
-            } else {
-                clearInterval(lilyGenerationInterval)
+        //     } else {
+        //         clearInterval(lilyGenerationInterval)
+        //     }
+        // }, moveSpeed * 0.5)
             }
-        }, moveSpeed)
     }
 
     function moveLilyPads() {
