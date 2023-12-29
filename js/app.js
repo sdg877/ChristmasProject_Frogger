@@ -148,18 +148,43 @@ function init () {
 
     function moveLilyPads() {
         const lilyIndices = lilyStartPositions.filter((position) => cells[position].classList.contains('lilypad'));
-        
+    
         lilyIndices.forEach((position, index) => {
             cells[position].classList.remove('lilypad');
-            lilyStartPositions[index] = position + 1;
-        });
     
-        lilyStartPositions.forEach((position) => {
-            if (position < cellCount && isValidRow(position)) {
-                cells[position].classList.add('lilypad');
+            // Ensure lilypads stay within their rows
+            const row = Math.floor(position / width);
+            const nextPosition = position + 1;
+            const isAtRowEnd = nextPosition % width === 0;
+            const isValidMove = nextPosition < (row + 1) * width && !isAtRowEnd;
+    
+            if (isValidMove) {
+                cells[nextPosition].classList.add('lilypad');
+                lilyStartPositions[index] = nextPosition;
+            } else {
+                // If at row end, wrap around to the beginning of the same row
+                lilyStartPositions[index] = row * width;
+                cells[row * width].classList.add('lilypad');
             }
         });
     }
+
+// working logic except on wrong rows...
+    // function moveLilyPads() { 
+    //     const lilyIndices = lilyStartPositions.filter((position) => cells[position].classList.contains('lilypad'));
+        
+    //     lilyIndices.forEach((position, index) => {
+    //         cells[position].classList.remove('lilypad');
+    //         lilyStartPositions[index] = position + 1;
+    //     });
+    
+    //     lilyStartPositions.forEach((position) => {
+    //         if (position < cellCount && isValidRow(position)) {
+    //             cells[position].classList.add('lilypad');
+    //         }
+    //     });
+    // }
+
     // function moveLilyPads() {
     //     const lilyIndices = cells.reduce((acc, cell, index) => {
     //         if (cell.classList.contains('lilypad') && isValidRow(index)) {
