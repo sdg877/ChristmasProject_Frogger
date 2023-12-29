@@ -10,7 +10,7 @@
   .grid-container {
     width: 400px;
     height: 300px;
-    border: 1px solid #ccc;
+    /* border: 1px solid #ccc; */
   }
 
   .cell {
@@ -39,7 +39,7 @@
   }
   
   .grid div {
-    border: 1px solid lightgrey;
+    /* border: 1px solid lightgrey; */
     flex-grow: 1;
     height: 10%;
     width: 10%;
