@@ -105,7 +105,7 @@ function init () {
             } else {
                 clearInterval(carGenerationInterval)
             }
-        }, moveSpeed * 0.5)
+        }, moveSpeed * 0)
         }
 
     function moveCars() {
@@ -314,49 +314,44 @@ function init () {
 
     function handleMovement(event) {
         const key = event.key;
-        const up = "ArrowUp";
-        const down = "ArrowDown";
-        const left = "ArrowLeft";
-        const right = "ArrowRight";
     
-        removeFrog();
+        // Define the movements based on the arrow keys
+        const movements = {
+            ArrowUp: -width,
+            ArrowDown: width,
+            ArrowLeft: -1,
+            ArrowRight: 1,
+        };
     
-        let newPosition = currentPosition;
+        const newPosition = currentPosition + movements[key];
     
-        if (key === up && currentPosition >= width) {
-            newPosition = currentPosition - width;
-        } else if (key === down && currentPosition + width < cellCount) {
-            newPosition = currentPosition + width;
-        } else if (key === left && currentPosition % width !== 0) {
-            newPosition = currentPosition - 1;
-        } else if (key === right && (currentPosition + 1) % width !== 0) {
-            newPosition = currentPosition + 1;
+        // Check if the new position is within bounds and valid
+        if (
+            newPosition >= 0 &&
+            newPosition < cellCount &&
+            !cells[newPosition].classList.contains('carright')
+        ) {
+            // Remove frog from the current position
+            cells[currentPosition].classList.remove('frog');
+    
+            // Check if the new position is a lilypad
+            if (cells[newPosition].classList.contains('lilypad')) {
+                const nextPosition = getLilyPadNextPosition(newPosition);
+    
+                if (nextPosition !== -1 && !cells[nextPosition].classList.contains('carright')) {
+                    currentPosition = nextPosition;
+                } else {
+                    stopGame();
+                    return;
+                }
+            } else {
+                currentPosition = newPosition;
+            }
+    
+            // Add frog to the new position
+            cells[currentPosition].classList.add('frog');
+            checkWinCondition();
         }
-    
-        if (cells[newPosition].classList.contains('carright')) {
-            stopGame();
-            return;
-        }
-    
-        // Check if the newPosition has a lilypad
-        if (cells[newPosition].classList.contains('lilypad')) {
-            cells[currentPosition].classList.remove('frog'); // Remove frog from current position
-            cells[newPosition].classList.add('frog'); // Add frog to the new position
-            currentPosition = newPosition; // Update currentPosition
-            checkWinCondition(); // Check if the win condition is met
-            return;
-        }
-    
-        // Check if the frog moved to rows 4, 3, 2, or 1 without a lilypad
-        const row = Math.floor(newPosition / width);
-        if (row <= 4) {
-            stopGame();
-            return;
-        }
-    
-        cells[newPosition].classList.add('frog');
-        currentPosition = newPosition;
-        checkWinCondition();
     }
 
         // if (key === up && currentPosition >= width) {
