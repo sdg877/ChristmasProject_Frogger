@@ -17,7 +17,7 @@ function init () {
     const moveSpeed = 500
     const lilyRows = [1, 2, 3, 4]
     const validRows = [5, 6, 7, 8]
-    const lilyStartPositions = [10, 20, 30, 40]
+    const lilyStartPositions = [10, 20, 30, 40, 19, 29, 39, 49]
     const fixedStartingPositions = [50, 60, 70, 80]
     let direction = "right"
     let collided = false
@@ -105,7 +105,7 @@ function init () {
             } else {
                 clearInterval(carGenerationInterval)
             }
-        }, moveSpeed * 1.5)
+        }, moveSpeed * 0.5)
         }
 
     function moveCars() {
@@ -131,44 +131,83 @@ function init () {
     }
 
     function createLilyPads() {
-        // const lilyGenerationInterval = setInterval(() => {
+        setInterval(() => {
             const emptyLilyStartingPositions = lilyStartPositions.filter(
                 (position) => !cells[position].classList.contains('lilypad')
-            )
+            );
 
             if (emptyLilyStartingPositions.length > 0) {
                 const randomLilyStartPositions =
-                emptyLilyStartingPositions[Math.floor(Math.random() * emptyLilyStartingPositions.length)]
-                addLilyPads(randomLilyStartPositions)
-        //     } else {
-        //         clearInterval(lilyGenerationInterval)
-        //     }
-        // }, moveSpeed * 0.5)
+                    emptyLilyStartingPositions[Math.floor(Math.random() * emptyLilyStartingPositions.length)];
+                addLilyPads(randomLilyStartPositions);
             }
+        }, moveSpeed * 1.5);
     }
 
     function moveLilyPads() {
         const lilyIndices = lilyStartPositions.filter((position) => cells[position].classList.contains('lilypad'));
-    
+
         lilyIndices.forEach((position, index) => {
             cells[position].classList.remove('lilypad');
-    
-            // Ensure lilypads stay within their rows
+
             const row = Math.floor(position / width);
-            const nextPosition = position + 1;
-            const isAtRowEnd = nextPosition % width === 0;
-            const isValidMove = nextPosition < (row + 1) * width && !isAtRowEnd;
-    
-            if (isValidMove) {
+
+            let nextPosition;
+            if (row % 2 === 0) {
+                nextPosition = position + 1 < (row + 1) * width ? position + 1 : row * width;
+            } else {
+                nextPosition = position - 1 >= row * width ? position - 1 : (row + 1) * width - 1;
+            }
+
+            if (nextPosition !== -1 && !cells[nextPosition].classList.contains('lilypad')) {
                 cells[nextPosition].classList.add('lilypad');
                 lilyStartPositions[index] = nextPosition;
-            } else {
-                // If at row end, wrap around to the beginning of the same row
-                lilyStartPositions[index] = row * width;
-                cells[row * width].classList.add('lilypad');
             }
         });
     }
+ 
+    //mostly working logic
+    // function createLilyPads() {
+    //     // const lilyGenerationInterval = setInterval(() => {
+    //         const emptyLilyStartingPositions = lilyStartPositions.filter(
+    //             (position) => !cells[position].classList.contains('lilypad')
+    //         )
+
+    //         if (emptyLilyStartingPositions.length > 0) {
+    //             const randomLilyStartPositions =
+    //             emptyLilyStartingPositions[Math.floor(Math.random() * emptyLilyStartingPositions.length)]
+    //             addLilyPads(randomLilyStartPositions)
+    //     //     } else {
+    //     //         clearInterval(lilyGenerationInterval)
+    //     //     }
+    //     // }, moveSpeed * 0.5)
+    //         }
+    //     }
+    
+
+    //mostly working logic
+    // function moveLilyPads() {
+    //     const lilyIndices = lilyStartPositions.filter((position) => cells[position].classList.contains('lilypad'));
+    
+    //     lilyIndices.forEach((position, index) => {
+    //         cells[position].classList.remove('lilypad');
+    
+    //         // Ensure lilypads stay within their rows
+    //         const row = Math.floor(position / width);
+    //         const nextPosition = position + 1;
+    //         const isAtRowEnd = nextPosition % width === 0;
+    //         const isValidMove = nextPosition < (row + 1) * width && !isAtRowEnd;
+    
+    //         if (isValidMove) {
+    //             cells[nextPosition].classList.add('lilypad');
+    //             lilyStartPositions[index] = nextPosition;
+    //         } else {
+    //             // If at row end, wrap around to the beginning of the same row
+    //             lilyStartPositions[index] = row * width;
+    //             cells[row * width].classList.add('lilypad');
+    //         }
+    //     });
+    // }
 
 // working logic except on wrong rows...
     // function moveLilyPads() { 
@@ -266,32 +305,77 @@ function init () {
         }
     }
 
-    function handleMovement(event){
-        const key = event.key
-        const up  = "ArrowUp"
-        const down = "ArrowDown"
-        const left = "ArrowLeft"
-        const right = "ArrowRight"
-
-        removeFrog()
-
-        if (key === up && currentPosition >= width) {
-            direction = "up"
-            currentPosition -= width
-        } else if (key === down && currentPosition + width <= cellCount - 1) {
-            direction = "down"
-            currentPosition += width
-        } else if (key === left && currentPosition % width !== 0) {
-            currentPosition--
-            direction = "left"
-        } else if (key === right && currentPosition % width !== width - 1) {
-            direction = "right"
-            currentPosition++
+    function checkWinCondition() {
+        const row = Math.floor(currentPosition / width);
+        if (row >= 1 && row <= 4 && !cells[currentPosition].classList.contains('lilypad')) {
+            stopGame();
         }
-
-        position = currentPosition
-        addFrog(currentPosition)
     }
+
+    function handleMovement(event) {
+        const key = event.key;
+        const up = "ArrowUp";
+        const down = "ArrowDown";
+        const left = "ArrowLeft";
+        const right = "ArrowRight";
+    
+        removeFrog();
+    
+        let newPosition = currentPosition;
+    
+        if (key === up && currentPosition >= width) {
+            newPosition = currentPosition - width;
+        } else if (key === down && currentPosition + width < cellCount) {
+            newPosition = currentPosition + width;
+        } else if (key === left && currentPosition % width !== 0) {
+            newPosition = currentPosition - 1;
+        } else if (key === right && (currentPosition + 1) % width !== 0) {
+            newPosition = currentPosition + 1;
+        }
+    
+        if (cells[newPosition].classList.contains('carright')) {
+            stopGame();
+            return;
+        }
+    
+        // Check if the newPosition has a lilypad
+        if (cells[newPosition].classList.contains('lilypad')) {
+            cells[currentPosition].classList.remove('frog'); // Remove frog from current position
+            cells[newPosition].classList.add('frog'); // Add frog to the new position
+            currentPosition = newPosition; // Update currentPosition
+            checkWinCondition(); // Check if the win condition is met
+            return;
+        }
+    
+        // Check if the frog moved to rows 4, 3, 2, or 1 without a lilypad
+        const row = Math.floor(newPosition / width);
+        if (row <= 4) {
+            stopGame();
+            return;
+        }
+    
+        cells[newPosition].classList.add('frog');
+        currentPosition = newPosition;
+        checkWinCondition();
+    }
+
+        // if (key === up && currentPosition >= width) {
+        //     direction = "up"
+        //     currentPosition -= width
+        // } else if (key === down && currentPosition + width <= cellCount - 1) {
+        //     direction = "down"
+        //     currentPosition += width
+        // } else if (key === left && currentPosition % width !== 0) {
+        //     currentPosition--
+        //     direction = "left"
+        // } else if (key === right && currentPosition % width !== width - 1) {
+        //     direction = "right"
+        //     currentPosition++
+        // }
+
+        // position = currentPosition
+        // addFrog(currentPosition)
+    // }
 
 //! Events
 document.addEventListener('keyup', handleMovement)
