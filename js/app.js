@@ -105,7 +105,7 @@ function init () {
             } else {
                 clearInterval(carGenerationInterval)
             }
-        }, moveSpeed * 0)
+        }, moveSpeed * 1)
         }
 
     function moveCars() {
